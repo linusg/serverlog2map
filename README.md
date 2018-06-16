@@ -28,6 +28,56 @@ export FLASK_APP=serverlog2map
 flask run
 ```
 
+## Deployment
+
+I prefer a combination of `uwsgi` and `nginx`. Use whatever WSGI server and setup you prefer :)
+
+Example configuration:
+
+- Install `uwsgi`, e.g. in a virtualenv located at `/var/www/serverlog2map/.venv`.
+- Make sure ownerships are correct (`www-data` should be the executing user, 
+  `chown -R www-data:www-data /var/www/serverlog2map` should to the trick - the easy way :P ) 
+- You may want to create a systemd service unit (e.g. `/etc/systemd/system/serverlog2map.service`):
+
+    ```
+    [Unit]
+    Description=serverlog2map systemd service unit
+    After=network.target
+    
+    [Service]
+    User=www-data
+    Group=www-data
+    WorkingDirectory=/var/www/serverlog2map
+    Environment=/var/www/serverlog2map/.venv/bin
+    ExecStart=/var/www/serverlog2map/.venv/bin/uwsgi --ini /var/www/serverlog2map/wsgi.ini
+    
+    [Install]
+    WantedBy=multi-user.target
+    ```
+- uWSGI configuration (e.g. `/var/www/serverlog2map/wsgi.ini`):
+
+    ```
+    [uwsgi]
+    module = serverlog2map:app
+    logto=serverlog2map.log
+    socket = serverlog2map.sock
+    chmod-socket = 660
+    processes = 5
+    master = true
+    vacuum = true
+    die-on-term = true
+    ```
+- Update Nginx config, e.g. add:
+
+    ```
+    location /serverlog2map {
+        include uwsgi_params;
+        uwsgi_pass unix:///var/www/serverlog2map/serverlog2map.sock;
+    }
+    ```
+- Restart Nginx
+- Start and optionally activate the service with `systemctl`.
+
 ## Configuration
 
 You can create a file `config.json` in the top-level directory of this repository to overwrite some or even all default
