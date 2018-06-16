@@ -1,6 +1,10 @@
 # serverlog2map
 > Visualize IP address locations from server logs on a map.
 
+![Example map](map.png)
+
+*Depending on your final configuration, this is what the web-based map may look like!*
+
 ## Requirements
 
 - Python 3.6+
