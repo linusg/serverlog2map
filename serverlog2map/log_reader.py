@@ -4,21 +4,13 @@ import operator
 import re
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Union
-
+import sys
 
 HTTPRequest = NamedTuple(
     "HTTPRequest",
     [
         ("ip", str),
         ("time_received", datetime.datetime),
-        ("method", str),
-        ("uri", str),
-        ("http_version", str),
-        ("status_code", int),
-        ("response_size", int),
-        ("referrer", Optional[str]),
-        ("user_agent", Optional[str]),
-        ("user_id", Optional[str]),
     ],
 )
 
@@ -33,40 +25,32 @@ def _parse_log(
     http_requests = []
 
     if path.suffix == ".gz":
-        with gzip.open(path, "rb") as f:
+        with gzip.open(str(path), "rb") as f:
             lines = [line.decode() for line in f.readlines()]
     else:
-        with open(path) as f:
+        with open(str(path)) as f:
             lines = f.readlines()
 
     lines = [line.strip() for line in lines if line.strip()]
 
     for line in lines:
+        print('*** Parsing: line {0}'.format(line), file=sys.stderr)
         try:
-            ip, user_id, time_received, method, uri, http_version, status_code, response_size, referrer, user_agent = re.match(
+            time_received, ip = re.match(
                 regex_request, line
             ).groups()
         except AttributeError:
             # Invalid HTTP requests suck, but they occur.
-            ip, user_id, time_received, status_code, response_size, referrer, user_agent = re.match(
-                regex_request_invalid, line
-            ).groups()
-            method, uri, http_version = None, None, None
-
-        if ip.startswith("127") and ignore_local:
             continue
+
+        if ( ip.startswith("127") or ip.startswith("192") ) and ignore_local:
+            continue
+
+        print('*** Parsed: time {0}, ip {1}'.format(time_received,ip), file=sys.stderr)
 
         http_request = HTTPRequest(
             ip,
             datetime.datetime.strptime(time_received, time_format),
-            method,
-            uri,
-            http_version,
-            int(status_code),
-            int(response_size),
-            referrer,
-            user_agent,
-            user_id if user_id != "-" else None,
         )
         http_requests.append(http_request)
 

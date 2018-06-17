@@ -1,6 +1,7 @@
 import glob
 import json
 import os
+import sys
 
 import grequests
 from flask import Flask, render_template, jsonify
@@ -51,6 +52,7 @@ def index():
 @app.route("/data")
 def data():
     files = glob.glob(os.path.join(config["log_dir"], config["file_pattern"]))
+
     http_requests = parse_log_files(
         files,
         config["regex_request"],
