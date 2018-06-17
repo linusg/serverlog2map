@@ -7,7 +7,7 @@ from typing import List, NamedTuple, Optional, Union
 import sys
 
 HTTPRequest = NamedTuple(
-    "HTTPRequest",
+    "Request",
     [
         ("ip", str),
         ("time_received", datetime.datetime),
@@ -18,7 +18,6 @@ HTTPRequest = NamedTuple(
 def _parse_log(
     path: Path,
     regex_request: str,
-    regex_request_invalid: str,
     time_format: str,
     ignore_local: bool,
 ) -> List[HTTPRequest]:
@@ -34,7 +33,6 @@ def _parse_log(
     lines = [line.strip() for line in lines if line.strip()]
 
     for line in lines:
-        print('*** Parsing: line {0}'.format(line), file=sys.stderr)
         try:
             time_received, ip = re.match(
                 regex_request, line
@@ -46,7 +44,7 @@ def _parse_log(
         if ( ip.startswith("127") or ip.startswith("192") ) and ignore_local:
             continue
 
-        print('*** Parsed: time {0}, ip {1}'.format(time_received,ip), file=sys.stderr)
+        print('*** Parsed from line - timestamp: {0}, ip: {1}'.format(time_received,ip), file=sys.stderr)
 
         http_request = HTTPRequest(
             ip,
@@ -60,7 +58,6 @@ def _parse_log(
 def parse_log_files(
     files: List[Union[Path, str]],
     regex_request: str,
-    regex_request_invalid: str,
     time_format: str,
     ignore_local: bool = True,
 ) -> List[HTTPRequest]:
@@ -71,7 +68,6 @@ def parse_log_files(
             for request in _parse_log(
                 Path(file),
                 regex_request,
-                regex_request_invalid,
                 time_format,
                 ignore_local,
             )

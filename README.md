@@ -39,22 +39,22 @@ I prefer a combination of `uwsgi` and `nginx`. Use whatever WSGI server and setu
 Example configuration:
 
 - Install `uwsgi`, e.g. in a virtualenv located at `/var/www/serverlog2map/.venv`.
-- Make sure ownerships are correct (`www-data` should be the executing user, 
-  `chown -R www-data:www-data /var/www/serverlog2map` should to the trick - the easy way :P ) 
+- Make sure ownerships are correct (`www-data` should be the executing user,
+  `chown -R www-data:www-data /var/www/serverlog2map` should to the trick - the easy way :P )
 - You may want to create a systemd service unit (e.g. `/etc/systemd/system/serverlog2map.service`):
 
     ```
     [Unit]
     Description=serverlog2map systemd service unit
     After=network.target
-    
+
     [Service]
     User=www-data
     Group=www-data
     WorkingDirectory=/var/www/serverlog2map
     Environment=/var/www/serverlog2map/.venv/bin
     ExecStart=/var/www/serverlog2map/.venv/bin/uwsgi --ini /var/www/serverlog2map/wsgi.ini
-    
+
     [Install]
     WantedBy=multi-user.target
     ```
@@ -89,13 +89,12 @@ values, which are shown below:
 
 ```json
 {
-    "log_dir": "/var/log/nginx",
-    "file_pattern": "access.log*",
+    "log_dir": "/var/log/syslog/",
+    "file_pattern": "syslog*",
     "marker_color": "#00000055",
     "marker_size": 20,
-    "regex_request": "([(\\d\\.)]+) .*? (.*?) \\[(.*?)\\] \"(.*?) (.*?) (.*?)\" (\\d+) (\\d+)(?: \"(.*?)\" \"(.*?)\")?",
-    "regex_request_invalid": "([(\\d\\.)]+) .*? (.*?) \\[(.*?)\\] \".*?\" (\\d+) (\\d+)(?: \"(.*?)\" \"(.*?)\")?",
-    "time_format": "%d/%b/%Y:%H:%M:%S %z",
+    "regex_request": "(.+) seafile kernel: .+GEOIP: .+ SRC=([(\\d\\.)]+)",
+    "time_format": "%b %d %H:%M:%S",
     "ignore_local": true
 }
 ```
