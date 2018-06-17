@@ -6,17 +6,21 @@ from pathlib import Path
 from typing import List, NamedTuple, Optional, Union
 
 
-class HTTPRequest(NamedTuple):
-    ip: str
-    time_received: datetime.datetime
-    method: str
-    uri: str
-    http_version: str
-    status_code: int
-    response_size: int
-    referrer: Optional[str]
-    user_agent: Optional[str]
-    user_id: Optional[str]
+HTTPRequest = NamedTuple(
+    "HTTPRequest",
+    [
+        ("ip", str),
+        ("time_received", datetime.datetime),
+        ("method", str),
+        ("uri", str),
+        ("http_version", str),
+        ("status_code", int),
+        ("response_size", int),
+        ("referrer", Optional[str]),
+        ("user_agent", Optional[str]),
+        ("user_id", Optional[str]),
+    ],
+)
 
 
 def _parse_log(

@@ -7,7 +7,7 @@
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.5+
 - Flask, grequests and their dependencies
 
 ## Installing

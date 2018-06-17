@@ -66,7 +66,7 @@ def data():
         }
         for resp in grequests.map(
             (
-                grequests.get(f"https://freegeoip.net/json/{ip}")
+                grequests.get("https://freegeoip.net/json/{ip}".format(ip=ip))
                 for ip in set(ip_addresses)
             ),
             size=10,
