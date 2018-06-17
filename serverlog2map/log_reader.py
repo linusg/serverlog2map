@@ -45,14 +45,14 @@ def _parse_log(
         if (ip.startswith("127") or ip.startswith("192")) and ignore_local:
             continue
 
+        if ip in ip_addresses and ignore_duplicates:
+            continue
+
         print(
             "Parsed {path}, line {line_nr} - time: {timestamp}, IP address: {ip}".format(
                 path=path, line_nr=line_nr, timestamp=timestamp, ip=ip
             )
         )
-
-        if ip in ip_addresses and ignore_duplicates:
-            continue
 
         request = Request(ip, datetime.datetime.strptime(timestamp, time_format))
         requests_.append(request)
