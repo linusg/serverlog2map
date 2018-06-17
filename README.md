@@ -96,7 +96,8 @@ values, which are shown below:
     "request_regex": "([(\\d\\.)]+) .*? .*? \\[(.*?)\\] \".*? .*? .*?\" \\d+ \\d+(?: \".*?\" \".*?\")?",
     "time_format": "%d/%b/%Y:%H:%M:%S %z",
     "time_first": false,
-    "ignore_local": true
+    "ignore_local": true,
+    "ignore_duplicates": false
 }
 ```
 

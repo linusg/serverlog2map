@@ -13,9 +13,11 @@ def _parse_log(
     time_format: str,
     time_first: bool,
     ignore_local: bool,
+    ignore_duplicates: bool,
 ) -> List[Request]:
 
     requests_ = []
+    ip_addresses = set()
 
     if path.endswith(".gz"):
         with gzip.open(path, "rb") as f:
@@ -49,8 +51,13 @@ def _parse_log(
             )
         )
 
+        if ip in ip_addresses and ignore_duplicates:
+            continue
+
         request = Request(ip, datetime.datetime.strptime(timestamp, time_format))
         requests_.append(request)
+
+        ip_addresses.add(ip)
 
     return requests_
 
@@ -61,6 +68,7 @@ def parse_log_files(
     time_format: str,
     time_first: bool,
     ignore_local: bool,
+    ignore_duplicates: bool,
 ) -> List[Request]:
 
     return sorted(
@@ -68,7 +76,12 @@ def parse_log_files(
             request
             for file in files
             for request in _parse_log(
-                file, regex_request, time_format, time_first, ignore_local
+                file,
+                regex_request,
+                time_format,
+                time_first,
+                ignore_local,
+                ignore_duplicates,
             )
         ],
         key=operator.attrgetter("timestamp"),

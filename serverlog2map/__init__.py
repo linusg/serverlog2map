@@ -18,6 +18,7 @@ DEFAULT_CONFIG = {
     "time_format": "%d/%b/%Y:%H:%M:%S %z",
     "time_first": False,
     "ignore_local": True,
+    "ignore_duplicates": False,
 }
 
 
@@ -60,6 +61,7 @@ def data():
         config["time_format"],
         config["time_first"],
         config["ignore_local"],
+        config["ignore_duplicates"],
     )
 
     ip_addresses = [req.ip for req in requests_]
