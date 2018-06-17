@@ -10,12 +10,13 @@ from serverlog2map.log_reader import parse_log_files
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = os.path.join(SCRIPT_DIR, "..", "config.json")
 DEFAULT_CONFIG = {
-    "log_dir": "/var/log/syslog",
-    "file_pattern": "syslog*",
+    "log_dir": "/var/log/nginx",
+    "file_pattern": "access.log*",
     "marker_color": "#00000055",
     "marker_size": 20,
-    "regex_request": "(.+) seafile kernel: .+DROP_GEOIP: .+ SRC=([(\\d\\.)]+)",
+    "request_regex": '([(\d\.)]+) .*? .*? \[(.*?)\] ".*? .*? .*?" \d+ \d+(?: ".*?" ".*?")?',
     "time_format": "%d/%b/%Y:%H:%M:%S %z",
+    "time_first": False,
     "ignore_local": True,
 }
 
@@ -49,16 +50,19 @@ def index():
 
 @app.route("/data")
 def data():
+    # TODO: Change GeoIP API
     files = glob.glob(os.path.join(config["log_dir"], config["file_pattern"]))
 
-    http_requests = parse_log_files(
+    # Not to confuse with the popular requests package...
+    requests_ = parse_log_files(
         files,
-        config["regex_request"],
+        config["request_regex"],
         config["time_format"],
+        config["time_first"],
         config["ignore_local"],
     )
 
-    ip_addresses = [req.ip for req in http_requests]
+    ip_addresses = [req.ip for req in requests_]
     locations = {
         resp.json()["ip"]: {
             "latitude": resp.json()["latitude"], "longitude": resp.json()["longitude"]

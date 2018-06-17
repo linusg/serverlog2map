@@ -2,75 +2,74 @@ import datetime
 import gzip
 import operator
 import re
-from pathlib import Path
-from typing import List, NamedTuple, Optional, Union
-import sys
+from typing import List, NamedTuple
 
-HTTPRequest = NamedTuple(
-    "Request",
-    [
-        ("ip", str),
-        ("time_received", datetime.datetime),
-    ],
-)
+Request = NamedTuple("Request", [("ip", str), ("timestamp", datetime.datetime)])
 
 
 def _parse_log(
-    path: Path,
+    path: str,
     regex_request: str,
     time_format: str,
+    time_first: bool,
     ignore_local: bool,
-) -> List[HTTPRequest]:
-    http_requests = []
+) -> List[Request]:
 
-    if path.suffix == ".gz":
-        with gzip.open(str(path), "rb") as f:
+    requests_ = []
+
+    if path.endswith(".gz"):
+        with gzip.open(path, "rb") as f:
             lines = [line.decode() for line in f.readlines()]
     else:
-        with open(str(path)) as f:
+        with open(path) as f:
             lines = f.readlines()
 
-    lines = [line.strip() for line in lines if line.strip()]
+    for line_nr, line in enumerate(lines):
+        line = line.strip()
 
-    for line in lines:
+        # Ignore empty lines
+        if not line:
+            continue
+
         try:
-            time_received, ip = re.match(
-                regex_request, line
-            ).groups()
+            if time_first:
+                timestamp, ip = re.match(regex_request, line).groups()
+            else:
+                ip, timestamp = re.match(regex_request, line).groups()
         except AttributeError:
-            # Invalid HTTP requests suck, but they occur.
+            # Invalid requests or other information included in the log will be ignored
             continue
 
-        if ( ip.startswith("127") or ip.startswith("192") ) and ignore_local:
+        if (ip.startswith("127") or ip.startswith("192")) and ignore_local:
             continue
 
-        print('*** Parsed from line - timestamp: {0}, ip: {1}'.format(time_received,ip), file=sys.stderr)
-
-        http_request = HTTPRequest(
-            ip,
-            datetime.datetime.strptime(time_received, time_format),
+        print(
+            "Parsed {path}, line {line_nr} - time: {timestamp}, IP address: {ip}".format(
+                path=path, line_nr=line_nr, timestamp=timestamp, ip=ip
+            )
         )
-        http_requests.append(http_request)
 
-    return http_requests
+        request = Request(ip, datetime.datetime.strptime(timestamp, time_format))
+        requests_.append(request)
+
+    return requests_
 
 
 def parse_log_files(
-    files: List[Union[Path, str]],
+    files: List[str],
     regex_request: str,
     time_format: str,
-    ignore_local: bool = True,
-) -> List[HTTPRequest]:
+    time_first: bool,
+    ignore_local: bool,
+) -> List[Request]:
+
     return sorted(
         [
             request
             for file in files
             for request in _parse_log(
-                Path(file),
-                regex_request,
-                time_format,
-                ignore_local,
+                file, regex_request, time_format, time_first, ignore_local
             )
         ],
-        key=operator.attrgetter("time_received"),
+        key=operator.attrgetter("timestamp"),
     )

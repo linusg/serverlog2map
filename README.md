@@ -89,14 +89,24 @@ values, which are shown below:
 
 ```json
 {
-    "log_dir": "/var/log/syslog/",
-    "file_pattern": "syslog*",
+    "log_dir": "/var/log/nginx",
+    "file_pattern": "access.log*",
     "marker_color": "#00000055",
     "marker_size": 20,
-    "regex_request": "(.+) seafile kernel: .+GEOIP: .+ SRC=([(\\d\\.)]+)",
-    "time_format": "%b %d %H:%M:%S",
+    "request_regex": "([(\\d\\.)]+) .*? .*? \\[(.*?)\\] \".*? .*? .*?\" \\d+ \\d+(?: \".*?\" \".*?\")?",
+    "time_format": "%d/%b/%Y:%H:%M:%S %z",
+    "time_first": false,
     "ignore_local": true
 }
+```
+
+The default `"request_regex"` is for log files following the [common log format](https://en.wikipedia.org/wiki/Common_Log_Format).
+
+Users of seafile and geoip may use the following configuration (thanks [**@framps**](https://github.com/framps)):
+
+```
+"request_regex": "(.+) seafile kernel: .+GEOIP: .+ SRC=([(\\d\\.)]+)",
+"time_first": true
 ```
 
 ## Contributing
