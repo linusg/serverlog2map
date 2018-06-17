@@ -75,5 +75,8 @@ def data():
     return jsonify({"ip_addresses": ip_addresses, "locations": locations})
 
 
+# This is really for development only! (running the script directly from PyCharm)
+# Please USE the flask command or something more advanced for deployment, examples
+# are provided in the README.
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
