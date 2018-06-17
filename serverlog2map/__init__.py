@@ -10,12 +10,11 @@ from serverlog2map.log_reader import parse_log_files
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = os.path.join(SCRIPT_DIR, "..", "config.json")
 DEFAULT_CONFIG = {
-    "log_dir": "/var/log/nginx",
-    "file_pattern": "access.log*",
+    "log_dir": "/var/log/syslog",
+    "file_pattern": "syslog*",
     "marker_color": "#00000055",
     "marker_size": 20,
-    "regex_request": '([(\d\.)]+) .*? (.*?) \[(.*?)\] "(.*?) (.*?) (.*?)" (\d+) (\d+)(?: "(.*?)" "(.*?)")?',
-    "regex_request_invalid": '([(\d\.)]+) .*? (.*?) \[(.*?)\] ".*?" (\d+) (\d+)(?: "(.*?)" "(.*?)")?',
+    "regex_request": "(.+) seafile kernel: .+DROP_GEOIP: .+ SRC=([(\\d\\.)]+)",
     "time_format": "%d/%b/%Y:%H:%M:%S %z",
     "ignore_local": True,
 }
@@ -51,10 +50,10 @@ def index():
 @app.route("/data")
 def data():
     files = glob.glob(os.path.join(config["log_dir"], config["file_pattern"]))
+
     http_requests = parse_log_files(
         files,
         config["regex_request"],
-        config["regex_request_invalid"],
         config["time_format"],
         config["ignore_local"],
     )
